@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 type Product struct {
@@ -43,9 +44,29 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(product)
 }
 
+func getProduct(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	for _, product := range products {
+		if product.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(product)
+			return
+		}
+	}
+
+	http.Error(w, "Produto não encontrado", http.StatusNotFound)
+}
+
 func main() {
 	http.HandleFunc("GET /products", listProducts)
 	http.HandleFunc("POST /products", createProduct)
+	http.HandleFunc("GET /products/{id}", getProduct)
 
 	fmt.Println("Server is running in port 8000")
 	http.ListenAndServe(":8000", nil)
