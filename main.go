@@ -63,10 +63,63 @@ func getProduct(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Produto não encontrado", http.StatusNotFound)
 }
 
+func updateProduct(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	var updateProduct Product
+	err = json.NewDecoder(r.Body).Decode(&updateProduct)
+
+	if err != nil {
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
+
+	for i, product := range products {
+		if product.ID == id {
+			updateProduct.ID = id
+
+			products[i] = updateProduct
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(updateProduct)
+			return
+		}
+	}
+
+	http.Error(w, "Produto não encontrado", http.StatusNotFound)
+}
+
+func deleteProduct(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	for i, product := range products {
+		if product.ID == id {
+			products = append(products[:i], products[i+1:]...)
+
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+
+	http.Error(w, "Produto não encontrado", http.StatusNotFound)
+}
+
 func main() {
 	http.HandleFunc("GET /products", listProducts)
 	http.HandleFunc("POST /products", createProduct)
 	http.HandleFunc("GET /products/{id}", getProduct)
+	http.HandleFunc("PUT /products/{id}", updateProduct)
+	http.HandleFunc("DELETE /products/{id}", deleteProduct)
 
 	fmt.Println("Server is running in port 8000")
 	http.ListenAndServe(":8000", nil)
