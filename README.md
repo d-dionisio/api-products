@@ -31,22 +31,22 @@ http://localhost:8000
 ## Diagrama da API
 
 ```mermaid
-flowchart LR
-    Client[Cliente HTTP] --> Router{Rota e método}
+graph LR
+    Client["Cliente HTTP"] --> Router{"Rota e método"}
 
-    Router -->|GET /products| List[Listar produtos]
-    Router -->|POST /products| Create[Criar produto]
-    Router -->|GET /products/id| Get[Buscar produto]
-    Router -->|PUT /products/id| Update[Atualizar produto]
-    Router -->|DELETE /products/id| Delete[Excluir produto]
+    Router --> List["GET products<br/>Listar produtos"]
+    Router --> Create["POST products<br/>Criar produto"]
+    Router --> Get["GET products por ID<br/>Buscar produto"]
+    Router --> Update["PUT products por ID<br/>Atualizar produto"]
+    Router --> Delete["DELETE products por ID<br/>Excluir produto"]
 
-    List --> Store[(Produtos em memória)]
+    List --> Store[("Produtos em memória")]
     Create --> Store
     Get --> Store
     Update --> Store
     Delete --> Store
 
-    Store --> Response[Resposta HTTP em JSON]
+    Store --> Response["Resposta HTTP em JSON"]
     Response --> Client
 ```
 
