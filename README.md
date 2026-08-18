@@ -1,6 +1,6 @@
 # API Products
 
-API REST simples para gerenciamento de produtos, desenvolvida em Go com o pacote padrão `net/http`.
+API REST simples para gerenciamento de produtos, desenvolvida em Go com o pacote padrão `net/http` e organizada em pacotes de handlers, modelos e armazenamento.
 
 O projeto implementa operações de criação, consulta, atualização e exclusão (CRUD). Os produtos são armazenados em memória, portanto os dados voltam ao estado inicial sempre que a aplicação é reiniciada.
 
@@ -28,26 +28,23 @@ O servidor estará disponível em:
 http://localhost:8000
 ```
 
+## Arquitetura
+
+- `main.go`: inicializa o servidor e registra as rotas.
+- `handlers`: recebe as requisições HTTP e gera as respostas JSON.
+- `models`: define a estrutura de dados de um produto.
+- `storage`: mantém os produtos e o próximo ID em memória.
+
 ## Diagrama da API
 
 ```mermaid
 graph LR
-    Client["Cliente HTTP"] --> Router{"Rota e método"}
-
-    Router --> List["GET products<br/>Listar produtos"]
-    Router --> Create["POST products<br/>Criar produto"]
-    Router --> Get["GET products por ID<br/>Buscar produto"]
-    Router --> Update["PUT products por ID<br/>Atualizar produto"]
-    Router --> Delete["DELETE products por ID<br/>Excluir produto"]
-
-    List --> Store[("Produtos em memória")]
-    Create --> Store
-    Get --> Store
-    Update --> Store
-    Delete --> Store
-
-    Store --> Response["Resposta HTTP em JSON"]
-    Response --> Client
+    Client["Cliente HTTP"] --> Main["main.go<br/>Rotas HTTP"]
+    Main --> Handlers["handlers<br/>Regras do CRUD"]
+    Handlers --> Models["models<br/>Estrutura Product"]
+    Handlers --> Storage["storage<br/>Produtos em memória"]
+    Storage --> Models
+    Handlers --> Client
 ```
 
 ## Modelo de produto
@@ -120,6 +117,13 @@ As mesmas requisições também estão disponíveis no arquivo [`request.http`](
 
 ```text
 api-products/
+├── handlers/
+│   └── product_handlers.go
+├── models/
+│   └── product.go
+├── storage/
+│   └── product_storage.go
+├── .gitignore
 ├── go.mod
 ├── main.go
 ├── README.md
