@@ -1,14 +1,16 @@
 # API Products
 
-API REST simples para gerenciamento de produtos, desenvolvida em Go com o pacote padrão `net/http` e organizada em pacotes de handlers, modelos e armazenamento.
+API REST simples para gerenciamento de produtos, desenvolvida em Go com o pacote padrão `net/http`, persistência em SQLite e organização em pacotes de handlers, modelos e armazenamento.
 
-O projeto implementa operações de criação, consulta, atualização e exclusão (CRUD). Os produtos são armazenados em memória, portanto os dados voltam ao estado inicial sempre que a aplicação é reiniciada.
+O projeto implementa operações de criação, consulta, atualização e exclusão (CRUD). Os produtos são armazenados no arquivo `products.db` e permanecem disponíveis após a reinicialização da aplicação.
 
 ## Tecnologias
 
 - Go 1.26.3
 - `net/http`
 - `encoding/json`
+- SQLite
+- [`modernc.org/sqlite`](https://pkg.go.dev/modernc.org/sqlite)
 
 ## Como executar
 
@@ -22,6 +24,8 @@ Tenha o [Go](https://go.dev/dl/) instalado em sua máquina.
 go run .
 ```
 
+Na primeira execução, as dependências são baixadas e o arquivo `products.db` é criado automaticamente no diretório do projeto. A tabela `products` também é criada caso ainda não exista.
+
 O servidor estará disponível em:
 
 ```text
@@ -33,7 +37,8 @@ http://localhost:8000
 - `main.go`: inicializa o servidor e registra as rotas.
 - `handlers`: recebe as requisições HTTP e gera as respostas JSON.
 - `models`: define a estrutura de dados de um produto.
-- `storage`: mantém os produtos e o próximo ID em memória.
+- `storage`: inicializa o SQLite e executa as operações no banco de dados.
+- `products.db`: armazena os produtos de forma persistente.
 
 ## Diagrama da API
 
@@ -42,8 +47,9 @@ graph LR
     Client["Cliente HTTP"] --> Main["main.go<br/>Rotas HTTP"]
     Main --> Handlers["handlers<br/>Regras do CRUD"]
     Handlers --> Models["models<br/>Estrutura Product"]
-    Handlers --> Storage["storage<br/>Produtos em memória"]
+    Handlers --> Storage["storage<br/>Consultas SQL"]
     Storage --> Models
+    Storage --> Database[("SQLite<br/>products.db")]
     Handlers --> Client
 ```
 
@@ -73,7 +79,7 @@ graph LR
 | `PUT` | `/products/{id}` | Substitui os dados de um produto | `200 OK` |
 | `DELETE` | `/products/{id}` | Exclui um produto | `204 No Content` |
 
-IDs inválidos retornam `400 Bad Request`. Quando o produto não existe, a API retorna `404 Not Found`.
+IDs inválidos ou corpos JSON malformados retornam `400 Bad Request`. Quando o produto não existe, a API retorna `404 Not Found`. Falhas de acesso ao banco de dados retornam `500 Internal Server Error`.
 
 ## Exemplos de uso
 
@@ -125,13 +131,16 @@ api-products/
 │   └── product_storage.go
 ├── .gitignore
 ├── go.mod
+├── go.sum
 ├── main.go
+├── products.db
 ├── README.md
 └── request.http
 ```
 
 ## Observações
 
-- Não há banco de dados: todas as alterações são perdidas ao encerrar o servidor.
-- A API começa com dois produtos de exemplo: Monitor e Teclado.
-- O campo `id` enviado pelo cliente é ignorado nas criações e definido automaticamente pela API.
+- O SQLite cria e mantém os dados localmente no arquivo `products.db`.
+- A tabela `products` é criada automaticamente na inicialização da aplicação.
+- O campo `id` é gerado automaticamente pelo SQLite nas criações.
+- A operação `PUT` substitui os campos `name` e `price` do produto informado.

@@ -2,11 +2,14 @@ package main
 
 import (
 	"api-products/handlers"
+	"api-products/storage"
 	"fmt"
 	"net/http"
 )
 
 func main() {
+	storage.InitDB()
+
 	http.HandleFunc("GET /products", handlers.ListProducts)
 	http.HandleFunc("POST /products", handlers.CreateProduct)
 	http.HandleFunc("GET /products/{id}", handlers.GetProduct)
